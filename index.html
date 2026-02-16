@@ -66,7 +66,7 @@
         </div>
         <div id="chat-box"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="메시지 또는 이미지 주소..." onkeypress="if(event.keyCode==13) send()">
+            <input type="text" id="msg-input" placeholder="메시지 주소..." onkeypress="if(event.keyCode==13) send()">
             <button onclick="send()" style="background:#fee500; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer; color:#000;">전송</button>
         </div>
     </div>
@@ -110,7 +110,7 @@
     async function handleAuth(type) {
         const id = document.getElementById('user-id').value;
         const pw = document.getElementById('user-pw').value;
-        if(!id || !pw) return alert("다 입력해줘!");
+        if(!id || !pw) return alert("다 입력해 주세요!");
 
         // 먼저 가입 시도 (이미 있으면 에러 없이 진행됨)
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'signup', id: id, pw: pw }) });
@@ -204,3 +204,4 @@
 </script>
 </body>
 </html>
+
