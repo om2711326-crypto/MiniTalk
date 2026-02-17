@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Talk vA0.2.1.1</title>
+    <title>Mini Talk vA0.2.2.0</title>
     <style>
         :root {
             --bg-color: #b2c7da; --app-bg: #fff; --text-color: #000;
@@ -37,13 +37,15 @@
         .input-area { padding: 12px; background: var(--app-bg); display: flex; gap: 8px; border-top: 1px solid #eee; }
         #msg-input { flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 12px; outline: none; background: var(--input-bg); color: var(--text-color); }
         .theme-btn { cursor: pointer; font-size: 1.2rem; background: none; border: none; color: #fff; outline: none; }
+        code { background: rgba(0,0,0,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+        [data-theme='dark'] code { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 <div class="app-container">
     <div id="login-screen">
         <div style="font-size: 3rem; margin-bottom: 10px;">💬</div>
-        <b style="margin-bottom:20px;">Mini Talk vA0.2.1.1</b>
+        <b style="margin-bottom:20px;">Mini Talk vA0.2.2.0</b>
         <input type="text" id="user-id" class="login-input" placeholder="아이디">
         <input type="password" id="user-pw" class="login-input" placeholder="비밀번호">
         <button class="btn-main" onclick="handleAuth()">로그인해서 시작하기</button>
@@ -70,12 +72,10 @@
 </div>
 
 <script>
-    // ✅ 전달해주신 새로운 API 주소입니다.
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw5NHbilBsQ96QHmmJtK1dg0L7nzmf3d1qa5OmY9uk43WyZWc9moiixdNGzjZ7mOOdw/exec'; 
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw794jTi9gE6_GDA8pxoLcYyM0fjH_WngUA54liRUrvlN0uozqAsa9G1R9rIPcMiArD/exec'; 
     const ADMIN_PW = 'MiniTalkAdmin0922'; 
     let myID = "", isGuest = false, isAdmin = false, adminKey = "", lastMsgCount = 0;
 
-    // 테마 전환 기능
     function toggleTheme() {
         const doc = document.documentElement;
         const icon = document.getElementById('theme-icon');
@@ -88,18 +88,31 @@
         }
     }
 
-    // URL 및 이미지 파싱
+    // 마크다운 및 URL 파싱 함수 (강화됨)
     function parseContent(msg) {
+        let content = msg.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        
+        // URL 처리
         const urlPattern = /(https?:\/\/[^\s]+)/g;
-        return msg.replace(urlPattern, (url) => {
+        content = content.replace(urlPattern, (url) => {
             if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i)) {
                 return `<img src="${url}" class="chat-img" onclick="window.open('${url}')">`;
             }
             return `<a href="${url}" target="_blank" style="color: #00aaff;">${url}</a>`;
         });
+
+        // 마크다운 처리
+        content = content
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/__(.*?)__/g, '<u>$1</u>')
+            .replace(/\*(.*?)\*/g, '<i>$1</i>')
+            .replace(/_(.*?)_/g, '<i>$1</i>')
+            .replace(/~~(.*?)~~/g, '<s>$1</s>')
+            .replace(/`(.*?)`/g, '<code>$1</code>');
+
+        return content;
     }
 
-    // 통합 로그인/가입 로직
     async function handleAuth() {
         const id = document.getElementById('user-id').value;
         const pw = document.getElementById('user-pw').value;
@@ -111,17 +124,12 @@
                 body: JSON.stringify({ type: 'login', id: id, pw: pw })
             });
             const data = await res.json();
-            
-            if(data.result === "success") {
-                enterChat(id, false);
-            } else {
-                // 로그인 실패 시 자동 가입 시도
+            if(data.result === "success") { enterChat(id, false); } 
+            else {
                 await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'signup', id: id, pw: pw }) });
-                alert("회원 정보가 등록되었습니다! 다시 한 번 로그인 버튼을 눌러주세요. 🙏");
+                alert("정보를 등록했습니다! 다시 로그인해 주세요. 🙏");
             }
-        } catch(e) {
-            alert("서버 연결에 실패했습니다. 앱 스크립트 배포 설정(모든 사람)을 확인해주세요! 😟");
-        }
+        } catch(e) { alert("연결 실패! 배포 설정을 확인해 주세요. 😟"); }
     }
 
     async function enterGuestMode() {
@@ -137,7 +145,7 @@
         document.getElementById('my-name-display').innerText = id;
         if(isGuest) {
             document.getElementById('msg-input').disabled = true;
-            document.getElementById('msg-input').placeholder = "구경꾼 모드입니다.";
+            document.getElementById('msg-input').placeholder = "눈팅 모드입니다.";
         }
         loadMessages();
         setInterval(loadMessages, 4000);
@@ -147,21 +155,17 @@
         const pw = prompt("관리자 암호를 입력해 주세요. 🔐");
         if(pw === ADMIN_PW) {
             adminKey = pw; isAdmin = true;
-            const menu = prompt("어떤 작업을 도와드릴까요?\n1: 공지사항 수정\n2: 메시지 삭제 모드 활성화");
+            const menu = prompt("1: 공지 수정, 2: 삭제 모드");
             if(menu === "1") {
-                const text = prompt("새로운 공지 내용을 입력해 주세요. ✨");
+                const text = prompt("새 공지:");
                 if(text) await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'setNotice', text: text, adminPw: pw })});
-            } else if(menu === "2") {
-                alert("삭제 권한이 활성화되었습니다. 메시지 옆 [삭제]를 눌러보세요!");
             }
             loadMessages();
-        } else {
-            alert("죄송하지만 관리자 암호가 틀렸습니다. 🤔");
-        }
+        } else { alert("암호가 틀렸습니다. 🤔"); }
     }
 
     async function deleteMsg(id) {
-        if(confirm("이 메시지를 정말로 삭제하시겠습니까? ⚠️")) {
+        if(confirm("정말 삭제하시겠습니까? ⚠️")) {
             await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'delete', msgId: id, adminPw: adminKey })});
             loadMessages();
         }
@@ -172,7 +176,7 @@
             const res = await fetch(API_URL);
             const data = await res.json();
             document.getElementById('online-count').innerText = data.onlineCount || 0;
-            document.getElementById('notice-text').innerText = "📢 " + (data.notice || "따뜻한 대화를 나눠보세요.");
+            document.getElementById('notice-text').innerText = "📢 " + (data.notice || "500 메시지 돌파 축하!");
             
             const chatBox = document.getElementById('chat-box');
             chatBox.innerHTML = '';
@@ -199,15 +203,6 @@
         const text = input.value.trim();
         if(!text) return;
         input.value = '';
-        
-        // 가독성을 위한 선전송 효과
-        const chatBox = document.getElementById('chat-box');
-        const temp = document.createElement('div');
-        temp.className = 'msg-unit my-msg';
-        temp.innerHTML = `<div class="nickname">${myID}</div><div class="msg-info"><div class="bubble" style="opacity:0.6;">${parseContent(text)}</div></div>`;
-        chatBox.appendChild(temp);
-        chatBox.scrollTop = chatBox.scrollHeight;
-
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: myID, message: text }) });
     }
 
