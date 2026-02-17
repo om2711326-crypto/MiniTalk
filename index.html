@@ -81,7 +81,8 @@
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzVwDWYkwvbavMsXBm4gTist78Fs8EBrKZKygvan1NW-gEOq10zmWjO6LLqoVgr2dV0/exec';
+    // ✅ 전달해주신 새로운 API 주소로 교체되었습니다.
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzNRl36V8ZNPpArx7iu2weloFgmxhyriEb-iAyrZzxdzPgymDaEMjC-O8_XNvPiyhWX/exec';
     const ADMIN_PW = 'MiniTalkAdmin0922'; 
     let myID = "";
     let isGuest = false;
@@ -119,24 +120,30 @@
         
         if(!id || !pw) return alert("아이디와 비밀번호를 모두 입력해 주시겠어요? 😊");
 
+        // 회원가입 시도 (POST)
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'signup', id: id, pw: pw }) });
         
+        // 잠시 후 로그인 시도
         setTimeout(async () => {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'login', id: id, pw: pw }) });
-            const data = await res.json();
-            
-            if(data.result === "success") {
-                enterChat(id, false);
-            } else {
-                alert("죄송합니다. 정보가 일치하지 않아요. 다시 한 번 확인해 주시겠어요? 🙏");
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'login', id: id, pw: pw }) });
+                const data = await res.json();
+                
+                if(data.result === "success") {
+                    enterChat(id, false);
+                } else {
+                    alert("죄송합니다. 정보가 일치하지 않아요. 다시 한 번 확인해 주시겠어요? 🙏");
+                }
+            } catch(e) {
+                alert("서버 연결에 실패했습니다. API 주소나 앱 스크립트 설정을 확인해 주세요! 😟");
             }
-        }, 500);
+        }, 800);
     }
 
     async function enterGuestMode() {
         const guestID = "Viewer_" + Math.floor(Math.random() * 9000 + 1000);
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'signup', id: guestID, pw: '1234' }) });
-        setTimeout(() => enterChat(guestID, true), 500);
+        setTimeout(() => enterChat(guestID, true), 800);
     }
 
     function enterChat(id, guestStatus) {
@@ -184,8 +191,8 @@
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
-            document.getElementById('online-count').innerText = data.onlineCount;
-            document.getElementById('notice-text').innerText = "📢 " + data.notice;
+            document.getElementById('online-count').innerText = data.onlineCount || 0;
+            document.getElementById('notice-text').innerText = "📢 " + (data.notice || "공지가 없습니다.");
 
             if (lastMsgCount !== 0 && data.messages.length > lastMsgCount) {
                 const newM = data.messages[data.messages.length - 1];
@@ -211,7 +218,9 @@
                 chatBox.appendChild(div);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
-        } catch(e) {}
+        } catch(e) {
+            console.log("데이터를 불러오는 중 오류가 발생했습니다.");
+        }
     }
 
     async function send() {
@@ -220,12 +229,14 @@
         const text = input.value.trim();
         if(!text) return;
         input.value = '';
+        
         const chatBox = document.getElementById('chat-box');
         const temp = document.createElement('div');
         temp.className = 'msg-unit my-msg';
         temp.innerHTML = `<div class="nickname">${myID}</div><div class="msg-info"><div class="bubble" style="opacity:0.6;">${parseContent(text)}</div></div>`;
         chatBox.appendChild(temp);
         chatBox.scrollTop = chatBox.scrollHeight;
+        
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: myID, message: text }) });
     }
 
