@@ -3,40 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Talk vA0.1.0.0</title>
+    <title>Mini Talk vA0.2.0.2</title>
     <style>
         :root {
             --bg-color: #b2c7da; --app-bg: #fff; --text-color: #000;
             --header-bg: #423630; --my-bubble: #fee500; --other-bubble: #fff;
-            --input-bg: #fff;
+            --input-bg: #fff; --notice-bg: rgba(0,0,0,0.6);
         }
-        /* 다크모드 설정 */
         [data-theme='dark'] {
             --bg-color: #2f3136; --app-bg: #36393f; --text-color: #ffffff;
             --header-bg: #202225; --my-bubble: #f2d400; --other-bubble: #4f545c;
-            --input-bg: #40444b;
+            --input-bg: #40444b; --notice-bg: rgba(255,255,255,0.1);
         }
 
         body { background: var(--bg-color); font-family: 'Apple SD Gothic Neo', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; transition: 0.3s; }
-        .app-container { background: var(--app-bg); width: 360px; height: 620px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; }
+        .app-container { background: var(--app-bg); width: 360px; height: 620px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; position: relative; }
         
-        /* 로그인 화면 */
+        .notice-bar { background: var(--notice-bg); color: #fff; padding: 10px 15px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; z-index: 10; border-bottom: 1px solid rgba(255,255,255,0.1); }
+
         #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; padding: 40px; box-sizing: border-box; color: var(--text-color); }
-        .login-input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; background: var(--input-bg); color: var(--text-color); }
+        .login-input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 10px; background: var(--input-bg); color: var(--text-color); outline: none; }
         .btn-main { width: 100%; padding: 14px; background: #fee500; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: #000; }
 
-        /* 채팅 화면 */
         #chat-screen { display: none; flex-direction: column; height: 100%; }
         .chat-header { background: var(--header-bg); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         
         #chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--bg-color); }
         .msg-unit { display: flex; flex-direction: column; color: var(--text-color); }
-        .nickname { font-size: 0.75rem; margin-bottom: 3px; font-weight: bold; opacity: 0.8; }
-        .bubble { background: var(--other-bubble); padding: 10px 14px; border-radius: 15px; font-size: 0.95rem; max-width: 75%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-all; color: inherit; }
+        .nickname { font-size: 0.75rem; margin-bottom: 3px; font-weight: bold; opacity: 0.8; display: flex; align-items: center; gap: 5px; }
+        
+        .msg-info { display: flex; align-items: flex-end; gap: 5px; }
+        .timestamp { font-size: 0.6rem; color: #666; margin-bottom: 2px; min-width: 45px; }
+        
+        .bubble { background: var(--other-bubble); padding: 10px 14px; border-radius: 15px; font-size: 0.9rem; max-width: 75%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-all; color: inherit; }
         .my-msg { align-items: flex-end; }
+        .my-msg .msg-info { flex-direction: row-reverse; }
         .my-msg .bubble { background: var(--my-bubble); color: #000; }
         
-        /* 이미지 스타일 */
+        .del-btn { color: #ff6b6b; cursor: pointer; font-size: 0.7rem; font-weight: normal; margin-left: 5px; }
         .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; display: block; }
         
         .input-area { padding: 12px; background: var(--app-bg); display: flex; gap: 8px; border-top: 1px solid #eee; }
@@ -48,12 +52,12 @@
 
 <div class="app-container">
     <div id="login-screen">
-        <div style="font-size: 3rem; margin-bottom: 20px;">💬</div>
-        <b style="margin-bottom:20px;">Mini Talk vA0.1.0.0</b>
+        <div style="font-size: 3rem; margin-bottom: 10px;">💬</div>
+        <b style="margin-bottom:20px;">Mini Talk vA0.2.0.2</b>
         <input type="text" id="user-id" class="login-input" placeholder="아이디">
         <input type="password" id="user-pw" class="login-input" placeholder="비밀번호">
-        <button class="btn-main" onclick="handleAuth('login')">로그인 / 회원가입</button>
-        <button onclick="enterGuestMode()" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">👀 구경하기 (접속자 포함)</button>
+        <button class="btn-main" onclick="handleAuth()">로그인해서 시작하기</button>
+        <button onclick="enterGuestMode()" style="margin-top:15px; background:none; border:none; color:#888; cursor:pointer;">👀 조용히 구경하기</button>
     </div>
 
     <div id="chat-screen">
@@ -61,29 +65,32 @@
             <div><b id="my-name-display">사용자</b> <small>(🟢<span id="online-count">0</span>)</small></div>
             <div>
                 <button class="theme-btn" id="theme-icon" onclick="toggleTheme()">☀️</button>
-                <button onclick="logout()" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:0.7rem; margin-left:10px;">나가기</button>
+                <button onclick="logout()" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:0.7rem; margin-left:10px;">채팅방 나가기</button>
             </div>
+        </div>
+        <div class="notice-bar">
+            <span id="notice-text">📢 소식을 가져오는 중입니다...</span>
+            <button onclick="adminAction()" style="background:none; border:none; color:#ccc; font-size:0.7rem; cursor:pointer;">⚙️</button>
         </div>
         <div id="chat-box"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="메시지 주소..." onkeypress="if(event.keyCode==13) send()">
+            <input type="text" id="msg-input" placeholder="따뜻한 한마디를 남겨주세요..." onkeypress="if(event.keyCode==13) send()">
             <button onclick="send()" style="background:#fee500; border:none; padding:10px 15px; border-radius:10px; font-weight:bold; cursor:pointer; color:#000;">전송</button>
         </div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbydYz_4e0aCa1_Cr2Pp94QJoAczanui0ZQus6hiI4WB9rea3Ylx-bMsrYmpGe4Ho_kj/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzVwDWYkwvbavMsXBm4gTist78Fs8EBrKZKygvan1NW-gEOq10zmWjO6LLqoVgr2dV0/exec';
+    const ADMIN_PW = 'MiniTalkAdmin0922'; 
     let myID = "";
     let isGuest = false;
+    let isAdmin = false;
+    let adminKey = "";
     let lastMsgCount = 0;
 
-    // 브라우저 알림 권한
-    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-        Notification.requestPermission();
-    }
+    if (Notification.permission === "default") Notification.requestPermission();
 
-    // 다크모드 토글
     function toggleTheme() {
         const doc = document.documentElement;
         const icon = document.getElementById('theme-icon');
@@ -96,7 +103,6 @@
         }
     }
 
-    // 링크 및 이미지 자동 변환
     function parseContent(msg) {
         const urlPattern = /(https?:\/\/[^\s]+)/g;
         return msg.replace(urlPattern, (url) => {
@@ -107,20 +113,23 @@
         });
     }
 
-    async function handleAuth(type) {
+    async function handleAuth() {
         const id = document.getElementById('user-id').value;
         const pw = document.getElementById('user-pw').value;
-        if(!id || !pw) return alert("다 입력해 주세요!");
+        
+        if(!id || !pw) return alert("아이디와 비밀번호를 모두 입력해 주시겠어요? 😊");
 
-        // 먼저 가입 시도 (이미 있으면 에러 없이 진행됨)
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'signup', id: id, pw: pw }) });
         
-        // 로그인 시도
         setTimeout(async () => {
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'login', id: id, pw: pw }) });
             const data = await res.json();
-            if(data.result === "success") enterChat(id, false);
-            else alert("비밀번호가 틀렸거나 로그인 실패!");
+            
+            if(data.result === "success") {
+                enterChat(id, false);
+            } else {
+                alert("죄송합니다. 정보가 일치하지 않아요. 다시 한 번 확인해 주시겠어요? 🙏");
+            }
         }, 500);
     }
 
@@ -135,15 +144,40 @@
         isGuest = guestStatus;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('chat-screen').style.display = 'flex';
-        document.getElementById('my-name-display').innerText = isGuest ? "👀 구경꾼" : id;
+        document.getElementById('my-name-display').innerText = id;
         
         if(isGuest) {
             document.getElementById('msg-input').disabled = true;
-            document.getElementById('msg-input').placeholder = "구경꾼은 채팅 불가";
+            document.getElementById('msg-input').placeholder = "구경꾼 모드에서는 채팅이 어려워요.";
         }
-
         loadMessages();
         setInterval(loadMessages, 4000);
+    }
+
+    async function adminAction() {
+        const pw = prompt("관리자 암호를 입력해 주세요. 🔐");
+        if(pw === ADMIN_PW) {
+            adminKey = pw;
+            isAdmin = true;
+            const menu = prompt("어떤 작업을 도와드릴까요?\n1: 공지사항 수정\n2: 메시지 삭제 모드 활성화");
+            
+            if(menu === "1") {
+                const text = prompt("새로운 공지 내용을 입력해 주세요. ✨");
+                if(text) await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'setNotice', text: text, adminPw: pw })});
+            } else if(menu === "2") {
+                alert("메시지 삭제 권한이 활성화되었습니다. 신중하게 사용해 주세요! 🛡️");
+            }
+            loadMessages();
+        } else {
+            alert("죄송하지만 관리자 암호가 틀렸습니다. 운영자 본인이 맞으신가요? 🤔");
+        }
+    }
+
+    async function deleteMsg(id) {
+        if(confirm("이 메시지를 정말로 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없어요! ⚠️")) {
+            await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'delete', msgId: id, adminPw: adminKey })});
+            loadMessages();
+        }
     }
 
     async function loadMessages() {
@@ -151,12 +185,12 @@
             const res = await fetch(API_URL);
             const data = await res.json();
             document.getElementById('online-count').innerText = data.onlineCount;
+            document.getElementById('notice-text').innerText = "📢 " + data.notice;
 
-            // 알림 처리
             if (lastMsgCount !== 0 && data.messages.length > lastMsgCount) {
-                const newMsg = data.messages[data.messages.length - 1];
-                if (newMsg.name !== myID && Notification.permission === "granted") {
-                    new Notification("Mini Talk", { body: `${newMsg.name}: ${newMsg.msg}` });
+                const newM = data.messages[data.messages.length - 1];
+                if (newM.name !== myID && Notification.permission === "granted") {
+                    new Notification("Mini Talk", { body: `${newM.name}: ${newM.msg}` });
                 }
             }
             lastMsgCount = data.messages.length;
@@ -167,8 +201,13 @@
                 const isMy = item.name === myID;
                 const div = document.createElement('div');
                 div.className = `msg-unit ${isMy ? 'my-msg' : ''}`;
-                div.innerHTML = `<div class="nickname">${item.name}</div>
-                                 <div class="bubble">${parseContent(item.msg)}</div>`;
+                div.innerHTML = `
+                    <div class="nickname">${item.name} ${isAdmin ? `<span class="del-btn" onclick="deleteMsg(${item.id})">[삭제]</span>` : ''}</div>
+                    <div class="msg-info">
+                        <div class="bubble">${parseContent(item.msg)}</div>
+                        <div class="timestamp">${item.time}</div>
+                    </div>
+                `;
                 chatBox.appendChild(div);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
@@ -181,15 +220,12 @@
         const text = input.value.trim();
         if(!text) return;
         input.value = '';
-
-        // 낙관적 업데이트
         const chatBox = document.getElementById('chat-box');
-        const tempDiv = document.createElement('div');
-        tempDiv.className = 'msg-unit my-msg';
-        tempDiv.innerHTML = `<div class="nickname">${myID}</div><div class="bubble" style="opacity:0.6;">${parseContent(text)}</div>`;
-        chatBox.appendChild(tempDiv);
+        const temp = document.createElement('div');
+        temp.className = 'msg-unit my-msg';
+        temp.innerHTML = `<div class="nickname">${myID}</div><div class="msg-info"><div class="bubble" style="opacity:0.6;">${parseContent(text)}</div></div>`;
+        chatBox.appendChild(temp);
         chatBox.scrollTop = chatBox.scrollHeight;
-
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: myID, message: text }) });
     }
 
@@ -197,11 +233,7 @@
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'logout', id: myID }) });
         location.reload();
     }
-
-    window.addEventListener('beforeunload', () => {
-        if(myID) navigator.sendBeacon(API_URL, JSON.stringify({ type: 'logout', id: myID }));
-    });
+    window.addEventListener('beforeunload', () => { if(myID) navigator.sendBeacon(API_URL, JSON.stringify({ type: 'logout', id: myID })); });
 </script>
 </body>
 </html>
-
