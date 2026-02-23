@@ -3,236 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Talk vA0.2.3.4</title>
+    <title>Mini Talk vA0.3.2.4</title>
     <style>
         :root {
-            --bg-color: #f0f2f5; --app-bg: #ffffff; --text-color: #1c1e21;
-            --header-bg: #ffffff; --my-bubble: #fee500; --other-bubble: #f0f0f0;
-            --accent: #fee500; --gray-text: #65676b;
+            --bg: #f5f7fb; --app-bg: #ffffff; --primary: #fee500;
+            --text: #2c3e50; --my-bubble: #fee500; --other-bubble: #f0f0f0;
         }
-
         body { 
-            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); 
-            font-family: 'Apple SD Gothic Neo', sans-serif; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; 
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
         }
-
-        .app-container { 
-            background: var(--app-bg); width: 360px; height: 640px; 
-            border-radius: 35px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); 
-            overflow: hidden; display: flex; flex-direction: column; position: relative;
+        .app-container {
+            width: 360px; height: 680px; background: var(--app-bg);
+            border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
-
         /* 로딩 바 */
-        #loading-bar-container { position: absolute; top: 0; left: 0; width: 100%; height: 4px; z-index: 100; display: none; }
-        #loading-bar { height: 100%; background: var(--accent); width: 0%; transition: 0.3s; box-shadow: 0 0 10px var(--accent); }
-
-        /* 로그인 & 구경하기 화면 */
-        #login-screen { 
-            display: flex; flex-direction: column; justify-content: center; 
-            height: 100%; padding: 40px; box-sizing: border-box; text-align: center;
+        #loading-bar { 
+            position: absolute; top: 0; left: 0; height: 4px; background: var(--primary);
+            width: 0; transition: 0.4s; z-index: 1000;
         }
-        .login-logo { font-size: 4rem; margin-bottom: 30px; }
-        .login-input { 
-            width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 12px; 
-            border: 1px solid #ddd; background: #f9f9f9; outline: none; box-sizing: border-box;
+        /* 로그인 화면 */
+        #login-screen {
+            padding: 40px; display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center;
         }
-        .btn-main { 
-            width: 100%; padding: 16px; background: var(--accent); border: none; 
-            border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        .logo { font-size: 3.5rem; margin-bottom: 10px; }
+        .login-input {
+            padding: 15px; margin-bottom: 10px; border-radius: 15px; border: 1px solid #eee;
+            background: #f9f9f9; outline: none; font-size: 1rem;
         }
-        .btn-guest { 
-            margin-top: 20px; background: none; border: none; color: #888; 
-            text-decoration: underline; cursor: pointer; font-size: 0.85rem;
+        .btn-main {
+            padding: 16px; background: var(--primary); border: none; border-radius: 15px;
+            font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s;
         }
+        .btn-main:active { transform: scale(0.97); }
+        .btn-guest { margin-top: 20px; color: #888; cursor: pointer; font-size: 0.9rem; text-decoration: underline; background: none; border: none; }
 
         /* 채팅 화면 */
-        #chat-screen { display: none; height: 100%; flex-direction: column; }
-        .chat-header { 
-            background: #fff; padding: 20px; display: flex; 
-            justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid #f0f0f0;
+        #chat-screen { display: none; flex-direction: column; height: 100%; background: #b2c7da; }
+        .header { 
+            background: #fff; padding: 20px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-        #chat-box { 
-            flex: 1; padding: 20px; overflow-y: auto; display: flex; 
-            flex-direction: column; gap: 18px; background: #b2c7da; 
-        }
-
-        /* 말풍선 & 닉네임 */
-        .msg-unit { display: flex; flex-direction: column; max-width: 85%; animation: fadeInUp 0.4s ease; }
-        .nickname { font-size: 0.75rem; color: #444; margin-bottom: 5px; font-weight: bold; }
-        .msg-info { display: flex; align-items: flex-end; gap: 6px; }
+        #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        
+        .msg-unit { display: flex; flex-direction: column; max-width: 80%; animation: fadeInUp 0.3s ease-out; }
+        .nickname { font-size: 0.75rem; color: #444; margin-bottom: 4px; font-weight: 600; }
         .bubble { 
-            background: #fff; padding: 10px 14px; border-radius: 18px; 
-            border-top-left-radius: 2px; font-size: 0.95rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            word-break: break-all; color: #000;
+            padding: 10px 14px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); word-break: break-all;
         }
+        .other-msg .bubble { background: #fff; border-top-left-radius: 2px; }
         .my-msg { align-self: flex-end; }
         .my-msg .nickname { text-align: right; }
+        .my-msg .bubble { background: var(--my-bubble); border-top-right-radius: 2px; }
+
+        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 5px; }
+        .time { font-size: 0.6rem; color: #666; margin: 0 5px; }
+        .msg-info { display: flex; align-items: flex-end; }
         .my-msg .msg-info { flex-direction: row-reverse; }
-        .my-msg .bubble { background: var(--my-bubble); border-top-right-radius: 2px; border-top-left-radius: 18px; }
-        
-        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 8px; display: block; border: 1px solid rgba(0,0,0,0.05); }
-        .timestamp { font-size: 0.65rem; color: #777; min-width: 50px; }
 
-        /* 하단 입력 영역 (풍성하게 수정) */
-        .input-area { 
-            padding: 20px; background: #fff; display: flex; gap: 10px; 
-            border-top: 1px solid #f0f0f0; border-radius: 0 0 35px 35px;
+        /* 꽉 찬 하단 입력창 */
+        .input-wrap {
+            padding: 20px; background: #fff; border-top-left-radius: 25px; border-top-right-radius: 25px;
+            display: flex; gap: 10px; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
         }
-        #msg-input { 
-            flex: 1; border: none; padding: 12px 18px; border-radius: 25px; 
-            background: #f0f2f5; outline: none; font-size: 0.9rem;
+        #msg-input {
+            flex: 1; padding: 12px 18px; border-radius: 25px; border: none; background: #f1f3f5; outline: none;
         }
-        .btn-send-circle { 
-            width: 42px; height: 42px; background: var(--accent); border: none; 
-            border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+        .btn-send {
+            width: 45px; height: 45px; background: var(--primary); border: none; border-radius: 50%;
+            cursor: pointer; font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
         }
 
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div id="loading-bar-container"><div id="loading-bar"></div></div>
+    <div id="loading-bar"></div>
 
     <div id="login-screen">
-        <div class="login-logo">💬</div>
-        <h2 style="margin: 0 0 20px 0; color: #333;">Mini Talk</h2>
+        <div class="logo">💬</div>
+        <h2 style="margin-bottom: 30px;">Mini Talk <span style="font-weight: normal; font-size: 0.8rem; color: #aaa;">vA0.3.2.4</span></h2>
         <input type="text" id="user-id" class="login-input" placeholder="아이디">
         <input type="password" id="user-pw" class="login-input" placeholder="비밀번호">
-        <button class="btn-main" onclick="handleAuth()">입장하기</button>
-        <button class="btn-guest" onclick="enterGuestMode()">그냥 구경만 할게요 👀</button>
-        <p style="font-size: 0.7rem; color: #ccc; margin-top: 30px;">© 2026 Mini Talk Team</p>
+        <button class="btn-main" onclick="handleAuth()">채팅 시작하기</button>
+        <button class="btn-guest" onclick="enterGuest()">로그인 없이 구경하기 👀</button>
     </div>
 
     <div id="chat-screen">
-        <div class="chat-header">
-            <div><b id="my-name-display"></b> <small style="color: #28a745;">🟢<span id="online-count">0</span></small></div>
-            <button onclick="location.reload()" style="background:none; border:none; color:#aaa; cursor:pointer;">나가기</button>
+        <div class="header">
+            <b><span id="display-name"></span> <small style="color:#28a745">🟢<span id="online-count">0</span></small></b>
+            <button onclick="location.reload()" style="background:none; border:none; color:#999; cursor:pointer;">나가기</button>
         </div>
-        <div id="chat-box" onscroll="checkScroll()"></div>
-        <div class="input-area">
-            <input type="text" id="msg-input" placeholder="메시지 입력..." onkeypress="if(event.keyCode==13) send()">
-            <button class="btn-send-circle" onclick="send()">🚀</button>
+        <div id="chat-box"></div>
+        <div class="input-wrap">
+            <input type="text" id="msg-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) send()">
+            <button class="btn-send" onclick="send()">🚀</button>
         </div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyfFAUqv0NXFxPXJN73IL5n5Mv_u5kXHKC8XeOf10LCOsPSxn7ue2yBH1HzSVSooGU-/exec'; 
-    let myID = "", isAutoScroll = true, isGuest = false;
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxjRgO9MDzsWktv_jB5C7E2Wh9uinZ_E7QZc6GgYYZMe18CsvSSEbsb3jrg6tqjxdVg/exec';
+    let myID = "", isGuest = false;
 
-    function checkScroll() {
-        const box = document.getElementById('chat-box');
-        isAutoScroll = (box.scrollHeight - box.scrollTop - box.clientHeight < 100);
-    }
-
-    function parseContent(msg) {
+    function parseMsg(msg) {
         if(!msg) return "";
-        let content = msg.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        
-        // 이미지 정규식 강화 (namu wiki 포함 모든 https 주소 체크)
-        const urlPattern = /(https?:\/\/[^\s]+)/g;
-        content = content.replace(urlPattern, (url) => {
-            const lowerUrl = url.toLowerCase();
-            if (lowerUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)/i) || lowerUrl.includes('namu.wiki/i/')) {
-                return `<img src="${url}" class="chat-img" onclick="window.open('${url}')" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Image+Load+Fail';">`;
+        let txt = msg.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return txt.replace(urlRegex, (url) => {
+            if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('namu.wiki/i/')) {
+                return `<img src="${url}" class="chat-img" onclick="window.open('${url}')">`;
             }
-            return `<a href="${url}" target="_blank" style="color: #00aaff; text-decoration: none;">${url}</a>`;
+            return `<a href="${url}" target="_blank" style="color:#007bff">${url}</a>`;
         });
-
-        // 마크다운 처리 (굵게, 밑줄, 기울기, 취소선)
-        content = content
-            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-            .replace(/__(.*?)__/g, '<u>$1</u>')
-            .replace(/\*(.*?)\*/g, '<i>$1</i>')
-            .replace(/~~(.*?)~~/g, '<s>$1</s>')
-            .replace(/`(.*?)`/g, '<code>$1</code>');
-
-        return content;
     }
 
     async function handleAuth() {
         const id = document.getElementById('user-id').value;
         const pw = document.getElementById('user-pw').value;
-        if(!id || !pw) return alert("아이디와 비번을 모두 입력해주세요!");
-
-        startLoading();
+        if(!id || !pw) return alert("입력란을 채워주세요!");
+        
+        document.getElementById('loading-bar').style.width = '100%';
         try {
             const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'login', id: id, pw: pw }) });
-            const data = await res.json();
-            if(data.result === "success") {
-                myID = id; isGuest = false;
-                setTimeout(enterChat, 500);
-            } else {
-                alert("로그인 실패! 가입되지 않았거나 비번이 틀렸습니다.");
-            }
-        } catch(e) { alert("서버 연결 실패. 배포 설정(Anyone)을 확인해주세요!"); }
-        stopLoading();
+            myID = id; enterChat();
+        } catch(e) { alert("서버 연결에 실패했습니다."); }
+        document.getElementById('loading-bar').style.width = '0';
     }
 
-    function enterGuestMode() {
-        myID = "Guest_" + Math.floor(Math.random() * 9000 + 1000);
+    function enterGuest() {
+        myID = "Guest_" + Math.floor(Math.random()*9000+1000);
         isGuest = true;
         enterChat();
         document.getElementById('msg-input').disabled = true;
-        document.getElementById('msg-input').placeholder = "구경 모드입니다 (입력 불가)";
+        document.getElementById('msg-input').placeholder = "구경 모드입니다.";
     }
 
     function enterChat() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('chat-screen').style.display = 'flex';
-        document.getElementById('my-name-display').innerText = myID;
+        document.getElementById('display-name').innerText = myID;
         loadMessages();
         setInterval(loadMessages, 3000);
-    }
-
-    function startLoading() {
-        document.getElementById('loading-bar-container').style.display = 'block';
-        document.getElementById('loading-bar').style.width = '100%';
-    }
-    function stopLoading() {
-        setTimeout(() => { document.getElementById('loading-bar-container').style.display = 'none'; }, 500);
     }
 
     async function loadMessages() {
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
-            document.getElementById('online-count').innerText = data.onlineCount || 0;
-            
+            document.getElementById('online-count').innerText = data.onlineCount;
             const chatBox = document.getElementById('chat-box');
+            const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 100;
+            
             chatBox.innerHTML = '';
-            data.messages.forEach(item => {
-                const isMy = item.name === myID;
+            data.messages.forEach(m => {
+                const isMy = m.name === myID;
                 const div = document.createElement('div');
-                div.className = `msg-unit ${isMy ? 'my-msg' : ''}`;
+                div.className = `msg-unit ${isMy ? 'my-msg' : 'other-msg'}`;
                 div.innerHTML = `
-                    <div class="nickname">${item.name}</div>
+                    <div class="nickname">${m.name}</div>
                     <div class="msg-info">
-                        <div class="bubble">${parseContent(item.msg)}</div>
-                        <div class="timestamp">${item.time}</div>
+                        <div class="bubble">${parseMsg(m.msg)}</div>
+                        <div class="time">${m.time}</div>
                     </div>
                 `;
                 chatBox.appendChild(div);
             });
-            if (isAutoScroll) chatBox.scrollTop = chatBox.scrollHeight;
+            if(isAtBottom) chatBox.scrollTop = chatBox.scrollHeight;
         } catch(e) {}
     }
 
     async function send() {
-        if(isGuest) return;
         const input = document.getElementById('msg-input');
-        const text = input.value.trim();
-        if(!text) return;
+        if(!input.value.trim() || isGuest) return;
+        const text = input.value;
         input.value = '';
-        
-        // 서버 전송
         await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: myID, message: text }) });
+        loadMessages();
     }
 </script>
 </body>
