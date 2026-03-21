@@ -3,189 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Talk vA0.3.2.4</title>
+    <title>Mini Talk vA0.5.4</title>
     <style>
-        :root {
-            --bg: #f5f7fb; --app-bg: #ffffff; --primary: #fee500;
-            --text: #2c3e50; --my-bubble: #fee500; --other-bubble: #f0f0f0;
-        }
-        body { 
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
-        }
-        .app-container {
-            width: 360px; height: 680px; background: var(--app-bg);
-            border-radius: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; overflow: hidden; position: relative;
-        }
-        /* 로딩 바 */
-        #loading-bar { 
-            position: absolute; top: 0; left: 0; height: 4px; background: var(--primary);
-            width: 0; transition: 0.4s; z-index: 1000;
-        }
-        /* 로그인 화면 */
-        #login-screen {
-            padding: 40px; display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center;
-        }
-        .logo { font-size: 3.5rem; margin-bottom: 10px; }
-        .login-input {
-            padding: 15px; margin-bottom: 10px; border-radius: 15px; border: 1px solid #eee;
-            background: #f9f9f9; outline: none; font-size: 1rem;
-        }
-        .btn-main {
-            padding: 16px; background: var(--primary); border: none; border-radius: 15px;
-            font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s;
-        }
-        .btn-main:active { transform: scale(0.97); }
-        .btn-guest { margin-top: 20px; color: #888; cursor: pointer; font-size: 0.9rem; text-decoration: underline; background: none; border: none; }
-
-        /* 채팅 화면 */
-        #chat-screen { display: none; flex-direction: column; height: 100%; background: #b2c7da; }
-        .header { 
-            background: #fff; padding: 20px; display: flex; justify-content: space-between; 
-            align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        #chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        
-        .msg-unit { display: flex; flex-direction: column; max-width: 80%; animation: fadeInUp 0.3s ease-out; }
-        .nickname { font-size: 0.75rem; color: #444; margin-bottom: 4px; font-weight: 600; }
-        .bubble { 
-            padding: 10px 14px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); word-break: break-all;
-        }
-        .other-msg .bubble { background: #fff; border-top-left-radius: 2px; }
-        .my-msg { align-self: flex-end; }
-        .my-msg .nickname { text-align: right; }
-        .my-msg .bubble { background: var(--my-bubble); border-top-right-radius: 2px; }
-
-        .chat-img { max-width: 100%; border-radius: 12px; margin-top: 5px; }
-        .time { font-size: 0.6rem; color: #666; margin: 0 5px; }
-        .msg-info { display: flex; align-items: flex-end; }
-        .my-msg .msg-info { flex-direction: row-reverse; }
-
-        /* 꽉 찬 하단 입력창 */
-        .input-wrap {
-            padding: 20px; background: #fff; border-top-left-radius: 25px; border-top-right-radius: 25px;
-            display: flex; gap: 10px; align-items: center; box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
-        }
-        #msg-input {
-            flex: 1; padding: 12px 18px; border-radius: 25px; border: none; background: #f1f3f5; outline: none;
-        }
-        .btn-send {
-            width: 45px; height: 45px; background: var(--primary); border: none; border-radius: 50%;
-            cursor: pointer; font-size: 1.2rem; display: flex; justify-content: center; align-items: center;
-        }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        :root { --main: #fee500; --bg: #f0f2f5; --chat-bg: #b2c7da; }
+        body { background: #ced4da; font-family: -apple-system, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .app { width: 360px; height: 640px; background: #fff; border-radius: 35px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        .screen { display: none; flex-direction: column; height: 100%; }
+        .active { display: flex; }
+        .header { padding: 18px 20px; background: #fff; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .btn-plus { width: 35px; height: 35px; background: var(--main); border: none; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .join-box { padding: 15px; display: flex; gap: 8px; background: #f9f9f9; border-bottom: 1px solid #eee; }
+        .join-box input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 13px; }
+        .room-card { padding: 15px; margin: 8px 10px; border: 1px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.2s; background: #fff; }
+        .room-card:active { transform: scale(0.98); background: #fdfdfd; }
+        .room-card h4 { margin: 0 0 5px 0; font-size: 14px; color: #333; }
+        .room-card small { color: #999; font-size: 11px; }
+        #chat-box { flex: 1; background: var(--chat-bg); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 10px 14px; border-radius: 12px; max-width: 75%; font-size: 14px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .my { align-self: flex-end; background: var(--main); }
+        .input-area { padding: 12px 15px; display: flex; gap: 8px; background: #fff; align-items: center; }
+        #msg-input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid #eee; background: #f1f3f5; outline: none; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div id="loading-bar"></div>
-
-    <div id="login-screen">
-        <div class="logo">💬</div>
-        <h2 style="margin-bottom: 30px;">Mini Talk <span style="font-weight: normal; font-size: 0.8rem; color: #aaa;">vA0.3.2.4</span></h2>
-        <input type="text" id="user-id" class="login-input" placeholder="아이디">
-        <input type="password" id="user-pw" class="login-input" placeholder="비밀번호">
-        <button class="btn-main" onclick="handleAuth()">채팅 시작하기</button>
-        <button class="btn-guest" onclick="enterGuest()">로그인 없이 구경하기 👀</button>
+<div class="app">
+    <div id="sc-login" class="screen active" style="justify-content:center; padding:40px; box-sizing:border-box;">
+        <h1 style="text-align:center; margin-bottom:40px;">💬 Mini Talk v0.5.4</h1>
+        <input type="text" id="uid" placeholder="닉네임 입력" style="padding:15px; margin-bottom:12px; border-radius:15px; border:1px solid #ddd; outline:none;">
+        <button onclick="login()" style="padding:15px; background:var(--main); border:none; border-radius:15px; font-weight:bold; cursor:pointer;">시작하기</button>
     </div>
 
-    <div id="chat-screen">
+    <div id="sc-lobby" class="screen">
+        <div class="header"><span>로비</span><button class="btn-plus" onclick="openModal()">+</button></div>
+        <div class="join-box">
+            <input type="text" id="join-code" placeholder="16자리 참여 코드 입력">
+            <button onclick="joinByCode()" style="padding:10px 18px; background:#333; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">참여</button>
+        </div>
+        <div id="lobby-content" style="overflow-y:auto; flex:1; background:#f0f2f5;">
+            <div id="recent-area"></div>
+            <div style="padding:15px 15px 5px 18px; color:#666; font-size:12px; font-weight:bold;">[공개 톡방 목록]</div>
+            <div id="public-list"></div>
+        </div>
+    </div>
+
+    <div id="sc-chat" class="screen">
         <div class="header">
-            <b><span id="display-name"></span> <small style="color:#28a745">🟢<span id="online-count">0</span></small></b>
-            <button onclick="location.reload()" style="background:none; border:none; color:#999; cursor:pointer;">나가기</button>
+            <button onclick="exitChat()" style="border:none; background:none; cursor:pointer; font-size:20px;">◀</button>
+            <span id="chat-title">채팅방</span>
+            <div style="width:24px;"></div>
         </div>
         <div id="chat-box"></div>
-        <div class="input-wrap">
+        <div class="input-area">
             <input type="text" id="msg-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) send()">
-            <button class="btn-send" onclick="send()">🚀</button>
+            <button onclick="send()" style="border:none; background:var(--main); width:44px; height:44px; border-radius:50%; cursor:pointer;">🚀</button>
+        </div>
+    </div>
+
+    <div id="modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
+        <div style="background:#fff; width:280px; padding:25px; border-radius:25px;">
+            <h3 style="text-align:center;">신규 톡방 생성</h3>
+            <input type="text" id="new-name" placeholder="방 이름" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <input type="number" id="new-max" placeholder="최대 인원" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+            <button onclick="createRoom()" style="width:100%; padding:14px; background:var(--main); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">생성 및 입장</button>
+            <button onclick="closeModal()" style="width:100%; padding:10px; margin-top:10px; background:#f1f3f5; border:none; border-radius:10px;">취소</button>
         </div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxjRgO9MDzsWktv_jB5C7E2Wh9uinZ_E7QZc6GgYYZMe18CsvSSEbsb3jrg6tqjxdVg/exec';
-    let myID = "", isGuest = false;
+    // ✅ 최신 vA0.5.4 API 및 요청하신 시크릿 키 반영
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxtigVjzo8tGS5KDf-Os990EgILDP_9IMTFefzdqEjidMqptTJspxeDEUUqutlBzvaD/exec'; 
+    const SECRET_KEY = 'MiniTalk0922'; 
+    
+    let myID = "", curCode = "", timer = null;
 
-    function parseMsg(msg) {
-        if(!msg) return "";
-        let txt = msg.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        return txt.replace(urlRegex, (url) => {
-            if (url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || url.includes('namu.wiki/i/')) {
-                return `<img src="${url}" class="chat-img" onclick="window.open('${url}')">`;
-            }
-            return `<a href="${url}" target="_blank" style="color:#007bff">${url}</a>`;
+    function login() {
+        myID = document.getElementById('uid').value.trim();
+        if(!myID) return alert("닉네임을 입력해주세요!");
+        showLobby();
+    }
+
+    function showLobby() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('sc-lobby').classList.add('active');
+        renderLobby();
+    }
+
+    // 로비 최근 방문 5개 로직
+    function renderLobby() {
+        const recentList = JSON.parse(localStorage.getItem('minitalk_recent_list')) || [];
+        const recentArea = document.getElementById('recent-area');
+        
+        if(recentList.length > 0) {
+            let html = `<div style="padding:15px 15px 5px 18px; color:#666; font-size:12px; font-weight:bold;">[최근 방문한 톡방]</div>`;
+            recentList.forEach(room => {
+                html += `
+                    <div class="room-card" style="border-left: 5px solid var(--main); margin-bottom:5px;" onclick="enterRoom('${room.code}', '${room.name}')">
+                        <h4>${room.name}</h4><small>코드: ${room.code}</small>
+                    </div>`;
+            });
+            recentArea.innerHTML = html;
+        } else { recentArea.innerHTML = ""; }
+
+        const pubList = document.getElementById('public-list');
+        pubList.innerHTML = "";
+        ["🍎 사과 톡방", "🍌 바나나 톡방", "🍇 포도 톡방", "🍓 딸기 톡방", "🍑 복숭아 톡방"].forEach((n, i) => {
+            pubList.innerHTML += `<div class="room-card" onclick="enterRoom('PUB_0${i+1}', '${n}')"><h4>${n}</h4><small>누구나 참여 가능</small></div>`;
         });
     }
 
-    async function handleAuth() {
-        const id = document.getElementById('user-id').value;
-        const pw = document.getElementById('user-pw').value;
-        if(!id || !pw) return alert("입력란을 채워주세요!");
+    function enterRoom(code, name) {
+        curCode = code;
+        let recentList = JSON.parse(localStorage.getItem('minitalk_recent_list')) || [];
+        recentList = recentList.filter(room => room.code !== code);
+        recentList.unshift({code, name});
+        if(recentList.length > 5) recentList = recentList.slice(0, 5);
+        localStorage.setItem('minitalk_recent_list', JSON.stringify(recentList));
         
-        document.getElementById('loading-bar').style.width = '100%';
+        document.getElementById('chat-title').innerText = name;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('sc-chat').classList.add('active');
+        
+        loadMsgs();
+        if(timer) clearInterval(timer);
+        timer = setInterval(loadMsgs, 3000);
+    }
+
+    async function loadMsgs() {
         try {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ type: 'login', id: id, pw: pw }) });
-            myID = id; enterChat();
-        } catch(e) { alert("서버 연결에 실패했습니다."); }
-        document.getElementById('loading-bar').style.width = '0';
-    }
-
-    function enterGuest() {
-        myID = "Guest_" + Math.floor(Math.random()*9000+1000);
-        isGuest = true;
-        enterChat();
-        document.getElementById('msg-input').disabled = true;
-        document.getElementById('msg-input').placeholder = "구경 모드입니다.";
-    }
-
-    function enterChat() {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('chat-screen').style.display = 'flex';
-        document.getElementById('display-name').innerText = myID;
-        loadMessages();
-        setInterval(loadMessages, 3000);
-    }
-
-    async function loadMessages() {
-        try {
-            const res = await fetch(API_URL);
+            const res = await fetch(`${API_URL}?type=messages&roomCode=${curCode}&key=${encodeURIComponent(SECRET_KEY)}`);
             const data = await res.json();
-            document.getElementById('online-count').innerText = data.onlineCount;
-            const chatBox = document.getElementById('chat-box');
-            const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 100;
-            
-            chatBox.innerHTML = '';
+            const box = document.getElementById('chat-box');
+            box.innerHTML = "";
             data.messages.forEach(m => {
                 const isMy = m.name === myID;
-                const div = document.createElement('div');
-                div.className = `msg-unit ${isMy ? 'my-msg' : 'other-msg'}`;
-                div.innerHTML = `
-                    <div class="nickname">${m.name}</div>
-                    <div class="msg-info">
-                        <div class="bubble">${parseMsg(m.msg)}</div>
-                        <div class="time">${m.time}</div>
-                    </div>
-                `;
-                chatBox.appendChild(div);
+                box.innerHTML += `<div class="bubble ${isMy?'my':''}"><b>${m.name}</b><br>${m.msg}</div>`;
             });
-            if(isAtBottom) chatBox.scrollTop = chatBox.scrollHeight;
+            box.scrollTop = box.scrollHeight;
         } catch(e) {}
     }
 
     async function send() {
-        const input = document.getElementById('msg-input');
-        if(!input.value.trim() || isGuest) return;
-        const text = input.value;
-        input.value = '';
-        await fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: myID, message: text }) });
-        loadMessages();
+        const i = document.getElementById('msg-input');
+        const m = i.value.trim(); if(!m) return;
+        i.value = "";
+        try {
+            await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ type: 'message', name: myID, message: m, roomCode: curCode, key: SECRET_KEY }) 
+            });
+            loadMsgs();
+        } catch(e) { alert("⚠️ 전송 실패!"); }
     }
+
+    async function createRoom() {
+        const name = document.getElementById('new-name').value.trim();
+        const max = document.getElementById('new-max').value;
+        if(!name || !max) return alert("방 이름과 인원을 입력하세요!");
+
+        try {
+            const res = await fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ type: 'createRoom', name, max, key: SECRET_KEY }) 
+            });
+            const data = await res.json();
+            if(data.code) {
+                const isCopy = confirm(`🎉 방 생성 성공!\n코드: ${data.code}\n\n[확인]을 누르면 코드가 복사됩니다.`);
+                if(isCopy) navigator.clipboard.writeText(data.code).then(() => alert("복사 완료!"));
+                closeModal();
+                enterRoom(data.code, name);
+            }
+        } catch(e) { alert("⚠️ 생성 실패!"); }
+    }
+
+    async function joinByCode() {
+        const code = document.getElementById('join-code').value.trim();
+        if(!code) return alert("참여 코드를 입력하세요!");
+        try {
+            const res = await fetch(`${API_URL}?type=checkRoom&roomCode=${code}&key=${SECRET_KEY}`);
+            const data = await res.json();
+            if(data.exists) enterRoom(code, data.name);
+            else alert("⚠️ 존재하지 않는 방입니다.");
+        } catch(e) { alert("연결 실패!"); }
+    }
+
+    function exitChat() { if(timer) clearInterval(timer); showLobby(); }
+    function openModal() { document.getElementById('modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
 </script>
 </body>
 </html>
