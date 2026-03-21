@@ -3,45 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Talk vA0.5.4</title>
+    <title>Mini Talk vA0.5.6</title>
     <style>
         :root { --main: #fee500; --bg: #f0f2f5; --chat-bg: #b2c7da; }
         body { background: #ced4da; font-family: -apple-system, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .app { width: 360px; height: 640px; background: #fff; border-radius: 35px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+        
+        /* 앱 컨테이너 */
+        .app { width: 360px; height: 640px; background: #fff; border-radius: 35px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.2); border: 8px solid #333; }
+        
         .screen { display: none; flex-direction: column; height: 100%; }
         .active { display: flex; }
+
+        /* 헤더 스타일 */
         .header { padding: 18px 20px; background: #fff; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
         .btn-plus { width: 35px; height: 35px; background: var(--main); border: none; border-radius: 50%; font-size: 22px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+
+        /* 로비 스타일 */
         .join-box { padding: 15px; display: flex; gap: 8px; background: #f9f9f9; border-bottom: 1px solid #eee; }
         .join-box input { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; outline: none; font-size: 13px; }
         .room-card { padding: 15px; margin: 8px 10px; border: 1px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.2s; background: #fff; }
         .room-card:active { transform: scale(0.98); background: #fdfdfd; }
         .room-card h4 { margin: 0 0 5px 0; font-size: 14px; color: #333; }
         .room-card small { color: #999; font-size: 11px; }
+
+        /* 채팅 스타일 */
         #chat-box { flex: 1; background: var(--chat-bg); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 10px 14px; border-radius: 12px; max-width: 75%; font-size: 14px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .bubble { padding: 10px 14px; border-radius: 12px; max-width: 75%; font-size: 14px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; word-break: break-all; }
+        .bubble b { font-size: 11px; color: #555; display: block; margin-bottom: 3px; }
         .my { align-self: flex-end; background: var(--main); }
+        .my b { text-align: right; }
+
         .input-area { padding: 12px 15px; display: flex; gap: 8px; background: #fff; align-items: center; }
         #msg-input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid #eee; background: #f1f3f5; outline: none; }
+
+        /* 모달 스타일 */
+        #modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fff; width: 280px; padding: 25px; border-radius: 25px; box-sizing: border-box; }
+        .modal-content h3 { margin-top: 0; text-align: center; }
+        .modal-content input { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="app">
     <div id="sc-login" class="screen active" style="justify-content:center; padding:40px; box-sizing:border-box;">
-        <h1 style="text-align:center; margin-bottom:40px;">💬 Mini Talk v0.5.4</h1>
-        <input type="text" id="uid" placeholder="닉네임 입력" style="padding:15px; margin-bottom:12px; border-radius:15px; border:1px solid #ddd; outline:none;">
-        <button onclick="login()" style="padding:15px; background:var(--main); border:none; border-radius:15px; font-weight:bold; cursor:pointer;">시작하기</button>
+        <h1 style="text-align:center; margin-bottom:10px;">💬 Mini Talk</h1>
+        <p style="text-align:center; color:#888; margin-bottom:40px;">vA0.5.6</p>
+        <input type="text" id="uid" placeholder="사용할 닉네임 입력" style="padding:15px; margin-bottom:12px; border-radius:15px; border:1px solid #ddd; outline:none;">
+        <button onclick="login()" style="padding:15px; background:var(--main); border:none; border-radius:15px; font-weight:bold; cursor:pointer;">접속하기</button>
     </div>
 
     <div id="sc-lobby" class="screen">
-        <div class="header"><span>로비</span><button class="btn-plus" onclick="openModal()">+</button></div>
+        <div class="header">
+            <span>채팅 목록</span>
+            <button class="btn-plus" onclick="openModal()">+</button>
+        </div>
         <div class="join-box">
             <input type="text" id="join-code" placeholder="16자리 참여 코드 입력">
             <button onclick="joinByCode()" style="padding:10px 18px; background:#333; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">참여</button>
         </div>
         <div id="lobby-content" style="overflow-y:auto; flex:1; background:#f0f2f5;">
             <div id="recent-area"></div>
+            
             <div style="padding:15px 15px 5px 18px; color:#666; font-size:12px; font-weight:bold;">[공개 톡방 목록]</div>
             <div id="public-list"></div>
         </div>
@@ -55,25 +78,25 @@
         </div>
         <div id="chat-box"></div>
         <div class="input-area">
-            <input type="text" id="msg-input" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) send()">
+            <input type="text" id="msg-input" placeholder="메시지 입력..." onkeypress="if(event.keyCode==13) send()">
             <button onclick="send()" style="border:none; background:var(--main); width:44px; height:44px; border-radius:50%; cursor:pointer;">🚀</button>
         </div>
     </div>
 
-    <div id="modal" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:1000;">
-        <div style="background:#fff; width:280px; padding:25px; border-radius:25px;">
-            <h3 style="text-align:center;">신규 톡방 생성</h3>
-            <input type="text" id="new-name" placeholder="방 이름" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
-            <input type="number" id="new-max" placeholder="최대 인원" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box;">
+    <div id="modal">
+        <div class="modal-content">
+            <h3>신규 톡방 만들기</h3>
+            <input type="text" id="new-name" placeholder="방 이름">
+            <input type="number" id="new-max" placeholder="최대 인원 (숫자)">
             <button onclick="createRoom()" style="width:100%; padding:14px; background:var(--main); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">생성 및 입장</button>
-            <button onclick="closeModal()" style="width:100%; padding:10px; margin-top:10px; background:#f1f3f5; border:none; border-radius:10px;">취소</button>
+            <button onclick="closeModal()" style="width:100%; padding:10px; margin-top:10px; background:#f1f3f5; border:none; border-radius:10px; cursor:pointer;">취소</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ✅ 최신 vA0.5.4 API 및 요청하신 시크릿 키 반영
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxtigVjzo8tGS5KDf-Os990EgILDP_9IMTFefzdqEjidMqptTJspxeDEUUqutlBzvaD/exec'; 
+    // ✅ 설정값 반영
+    const API_URL = 'https://script.google.com/macros/s/AKfycbws0UrKQBMz2Vf2PrtnsuM_w5Z-73K6ESSQ9Ciz1DI5f2VrGOkSkZrr1DWOU_807XlF/exec'; 
     const SECRET_KEY = 'MiniTalk0922'; 
     
     let myID = "", curCode = "", timer = null;
@@ -90,7 +113,7 @@
         renderLobby();
     }
 
-    // 로비 최근 방문 5개 로직
+    // 로비 그리기 (최근 방문 5개 로직 포함)
     function renderLobby() {
         const recentList = JSON.parse(localStorage.getItem('minitalk_recent_list')) || [];
         const recentArea = document.getElementById('recent-area');
@@ -113,12 +136,13 @@
         });
     }
 
+    // 방 입장 및 로컬 스토리지 저장
     function enterRoom(code, name) {
         curCode = code;
         let recentList = JSON.parse(localStorage.getItem('minitalk_recent_list')) || [];
-        recentList = recentList.filter(room => room.code !== code);
-        recentList.unshift({code, name});
-        if(recentList.length > 5) recentList = recentList.slice(0, 5);
+        recentList = recentList.filter(room => room.code !== code); // 중복 제거
+        recentList.unshift({code: code, name: name}); // 맨 앞에 추가
+        if(recentList.length > 5) recentList = recentList.slice(0, 5); // 5개 유지
         localStorage.setItem('minitalk_recent_list', JSON.stringify(recentList));
         
         document.getElementById('chat-title').innerText = name;
@@ -127,9 +151,10 @@
         
         loadMsgs();
         if(timer) clearInterval(timer);
-        timer = setInterval(loadMsgs, 3000);
+        timer = setInterval(loadMsgs, 3000); // 3초마다 갱신
     }
 
+    // 메시지 불러오기 (CORS 대응)
     async function loadMsgs() {
         try {
             const res = await fetch(`${API_URL}?type=messages&roomCode=${curCode}&key=${encodeURIComponent(SECRET_KEY)}`);
@@ -138,12 +163,13 @@
             box.innerHTML = "";
             data.messages.forEach(m => {
                 const isMy = m.name === myID;
-                box.innerHTML += `<div class="bubble ${isMy?'my':''}"><b>${m.name}</b><br>${m.msg}</div>`;
+                box.innerHTML += `<div class="bubble ${isMy?'my':''}"><b>${m.name}</b>${m.msg}</div>`;
             });
             box.scrollTop = box.scrollHeight;
-        } catch(e) {}
+        } catch(e) { console.log("동기화 중..."); }
     }
 
+    // 메시지 전송
     async function send() {
         const i = document.getElementById('msg-input');
         const m = i.value.trim(); if(!m) return;
@@ -157,6 +183,7 @@
         } catch(e) { alert("⚠️ 전송 실패!"); }
     }
 
+    // 방 생성 및 코드 복사
     async function createRoom() {
         const name = document.getElementById('new-name').value.trim();
         const max = document.getElementById('new-max').value;
@@ -170,13 +197,16 @@
             const data = await res.json();
             if(data.code) {
                 const isCopy = confirm(`🎉 방 생성 성공!\n코드: ${data.code}\n\n[확인]을 누르면 코드가 복사됩니다.`);
-                if(isCopy) navigator.clipboard.writeText(data.code).then(() => alert("복사 완료!"));
+                if(isCopy) {
+                    navigator.clipboard.writeText(data.code).then(() => alert("복사 완료!"));
+                }
                 closeModal();
                 enterRoom(data.code, name);
             }
-        } catch(e) { alert("⚠️ 생성 실패!"); }
+        } catch(e) { alert("⚠️ 생성 실패! 서버 설정을 확인하세요."); }
     }
 
+    // 참여 코드로 입장
     async function joinByCode() {
         const code = document.getElementById('join-code').value.trim();
         if(!code) return alert("참여 코드를 입력하세요!");
@@ -192,5 +222,6 @@
     function openModal() { document.getElementById('modal').style.display = 'flex'; }
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
 </script>
+
 </body>
 </html>
